@@ -17,7 +17,7 @@ class Xacro(Substitution):
         self,
         file_path: SomeSubstitutionsType,
         *,
-        mappings: Optional[dict[SomeSubstitutionsType, SomeSubstitutionsType]] = None,
+        mappings: Optional[dict] = None,
     ) -> None:
         """Create a Xacro substitution."""
         super().__init__()
@@ -29,7 +29,7 @@ class Xacro(Substitution):
             self.__mappings = mappings
 
     @classmethod
-    def parse(cls, data: Iterable[SomeSubstitutionsType]):
+    def parse(cls, data: Iterable):
         """Parse `XacroSubstitution` substitution."""
         if len(data) != 1:
             raise TypeError(
@@ -40,12 +40,12 @@ class Xacro(Substitution):
         return cls, kwargs
 
     @property
-    def file_path(self) -> list[Substitution]:
+    def file_path(self) -> list:
         """Getter for file_path."""
         return self.__file_path
 
     @property
-    def mappings(self) -> dict[SomeSubstitutionsType, SomeSubstitutionsType]:
+    def mappings(self) -> dict:
         """Getter for mappings."""
         return self.__mappings
 

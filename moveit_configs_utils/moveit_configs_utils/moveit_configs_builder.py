@@ -87,7 +87,7 @@ def get_pattern_matches(folder, pattern):
     return matches
 
 
-@dataclass(slots=True)
+@dataclass
 class MoveItConfigs:
     """Class containing MoveIt related parameters."""
 
@@ -205,7 +205,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
     def robot_description(
         self,
         file_path: Optional[str] = None,
-        mappings: dict[SomeSubstitutionsType, SomeSubstitutionsType] = None,
+        mappings: dict = None,
     ):
         """Load robot description.
 
@@ -245,7 +245,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
     def robot_description_semantic(
         self,
         file_path: Optional[str] = None,
-        mappings: dict[SomeSubstitutionsType, SomeSubstitutionsType] = None,
+        mappings: dict = None,
     ):
         """Load semantic robot description.
 
@@ -415,7 +415,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
     def planning_pipelines(
         self,
         default_planning_pipeline: str = None,
-        pipelines: List[str] = None,
+        pipelines: List = None,
         load_all: bool = True,
     ):
         """Load planning pipelines parameters.
