@@ -228,6 +228,7 @@ void FollowJointTrajectoryControllerHandle::controllerDoneCallback(
                                               << errorCodeToMessage(wrapped_result.result->error_code) << ": "
                                               << wrapped_result.result->error_string);
   finishControllerExecution(wrapped_result.code);
+  error_code_.val = wrapped_result.result->error_code - 50;
 }
 
 }  // end namespace moveit_simple_controller_manager

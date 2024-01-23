@@ -87,6 +87,7 @@ public:
     // through the controller handle will fail if the server is not running when an action goal message is sent.
     controller_action_client_ = rclcpp_action::create_client<T>(node, getActionName());
     last_exec_ = moveit_controller_manager::ExecutionStatus::SUCCEEDED;
+    error_code_.val = error_code_.CONTROL_FAILED;
   }
 
   /**
@@ -172,6 +173,11 @@ public:
     return last_exec_;
   }
 
+  moveit_msgs::msg::MoveItErrorCodes getLastErrorCode() override
+  {
+    return error_code_;
+  }
+
   void addJoint(const std::string& name) override
   {
     joints_.push_back(name);
@@ -234,6 +240,7 @@ protected:
    * @brief Status after last trajectory execution.
    */
   moveit_controller_manager::ExecutionStatus last_exec_;
+  moveit_msgs::msg::MoveItErrorCodes error_code_;
 
   /**
    * @brief Indicates whether the controller handle is done executing its current trajectory.

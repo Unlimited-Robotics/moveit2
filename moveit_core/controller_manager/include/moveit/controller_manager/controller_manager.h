@@ -39,6 +39,7 @@
 #include <vector>
 #include <string>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
+#include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit/macros/class_forward.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -143,6 +144,13 @@ public:
   /** \brief Return the execution status of the last trajectory sent to the controller. */
   virtual ExecutionStatus getLastExecutionStatus() = 0;
 
+  virtual moveit_msgs::msg::MoveItErrorCodes getLastErrorCode()
+  {
+    moveit_msgs::msg::MoveItErrorCodes error;
+    error.val = moveit_msgs::msg::MoveItErrorCodes::CONTROL_FAILED;
+    return error;
+  }
+  
 protected:
   std::string name_;
 };
