@@ -217,6 +217,7 @@ public:
 
   /// Return the controller status for the last attempted execution
   moveit_controller_manager::ExecutionStatus getLastExecutionStatus() const;
+  moveit_msgs::msg::MoveItErrorCodes getLastErrorCode();
 
   /// Stop whatever executions are active, if any
   void stopExecution(bool auto_clear = true);
@@ -273,7 +274,7 @@ private:
   void reloadControllerInformation();
 
   /// Validate first point of trajectory matches current robot state
-  bool validate(const TrajectoryExecutionContext& context) const;
+  bool validate(const TrajectoryExecutionContext& context);
   bool configure(TrajectoryExecutionContext& context, const moveit_msgs::msg::RobotTrajectory& trajectory,
                  const std::vector<std::string>& controllers);
 
@@ -339,6 +340,7 @@ private:
   std::condition_variable execution_complete_condition_;
 
   moveit_controller_manager::ExecutionStatus last_execution_status_;
+  moveit_msgs::msg::MoveItErrorCodes error_code_;
   std::vector<moveit_controller_manager::MoveItControllerHandlePtr> active_handles_;
   int current_context_;
   std::vector<rclcpp::Time> time_index_;  // used to find current expected trajectory location

@@ -996,7 +996,7 @@ bool TrajectoryExecutionManager::distributeTrajectory(const moveit_msgs::msg::Ro
   return true;
 }
 
-bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& context) const
+bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& context)
 {
   if (allowed_start_tolerance_ == 0)  // skip validation on this magic number
     return true;
@@ -1043,6 +1043,13 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
                        "\nInvalid Trajectory: start point deviates from current robot state more than %g"
                        "\njoint '%s': expected: %g, current: %g",
                        allowed_start_tolerance_, joint_names[i].c_str(), traj_position, cur_position);
+          std::stringstream msg;
+          msg << "Invalid Trajectory: start point deviates from current robot state more than "
+              << allowed_start_tolerance_ << " joint " << joint_names[i] << " expected: " << traj_position
+              << ", current: " << cur_position;
+          
+          error_code_.val = error_code_.START_STATE_INVALID;
+          error_code_.message = msg.str();
           return false;
         }
       }
@@ -1085,6 +1092,12 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
                                           << allowed_start_tolerance_ << "\nmulti-dof joint '" << joint_names[i]
                                           << "': pos delta: " << offset.transpose()
                                           << " rot delta: " << rotation.angle());
+          std::stringstream msg;
+          msg << "Invalid Trajectory: start point deviates from current robot state more than "
+              << allowed_start_tolerance_ << " multi-dof joint '" << joint_names[i]
+              << " ': pos delta: " << offset.transpose() << " rot delta: " << rotation.angle();
+          error_code_.val = error_code_.START_STATE_INVALID;
+          error_code_.message = msg.str();
           return false;
         }
       }
@@ -1577,6 +1590,7 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
         RCLCPP_WARN_STREAM(LOGGER, "Controller handle " << handle->getName() << " reports status "
                                                         << handle->getLastExecutionStatus().asString());
         last_execution_status_ = handle->getLastExecutionStatus();
+        error_code_ = handle->getLastErrorCode();
         result = false;
       }
     }
@@ -1684,6 +1698,11 @@ TrajectoryExecutionManager::getTrajectories() const
 moveit_controller_manager::ExecutionStatus TrajectoryExecutionManager::getLastExecutionStatus() const
 {
   return last_execution_status_;
+}
+
+moveit_msgs::msg::MoveItErrorCodes TrajectoryExecutionManager::getLastErrorCode()
+{
+  return error_code_;
 }
 
 bool TrajectoryExecutionManager::ensureActiveControllersForGroup(const std::string& group)

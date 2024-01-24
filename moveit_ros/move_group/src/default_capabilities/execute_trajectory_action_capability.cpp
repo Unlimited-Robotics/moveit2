@@ -127,9 +127,10 @@ void MoveGroupExecuteTrajectoryAction::executePath(const std::shared_ptr<ExecTra
     }
     else
     {
-      action_res->error_code.val = moveit_msgs::msg::MoveItErrorCodes::CONTROL_FAILED;
+      action_res->error_code = context_->trajectory_execution_manager_->getLastErrorCode();
     }
-    RCLCPP_INFO_STREAM(LOGGER, "Execution completed: " << status.asString());
+    RCLCPP_INFO_STREAM(LOGGER, "Execution completed: " << status.asString() <<
+     " Error code: " << action_res->error_code.val << " error message: " << action_res->error_code.message);
   }
   else
   {
