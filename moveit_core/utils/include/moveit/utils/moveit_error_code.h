@@ -58,7 +58,9 @@ public:
   MoveItErrorCode(const moveit_msgs::msg::MoveItErrorCodes& code)
   {
     val = code.val;
+    message = code.message;
   }
+  
   explicit operator bool() const
   {
     return val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
