@@ -97,6 +97,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   random_numbers
   sensor_msgs
   shape_msgs
+  std_msgs
   srdfdom
   std_msgs
   tf2_eigen

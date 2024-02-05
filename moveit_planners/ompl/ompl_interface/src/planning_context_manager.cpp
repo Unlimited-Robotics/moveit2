@@ -419,6 +419,96 @@ PlanningContextManager::getPlanningContext(const planning_interface::PlannerConf
   return context;
 }
 
+ModelBasedPlanningContextPtr
+PlanningContextManager::getPlanningContext(const planning_interface::PlannerConfigurationSettings& config,
+                                           const ModelBasedStateSpaceFactoryPtr& factory,
+                                           const moveit_msgs::msg::MotionPlanRequest& req,
+                                           const rclcpp::Node::SharedPtr& node) const
+{
+  // Check for a cached planning context
+  ModelBasedPlanningContextPtr context;
+
+  {
+    std::unique_lock<std::mutex> slock(cached_contexts_->lock_);
+    auto cached_contexts = cached_contexts_->contexts_.find(std::make_pair(config.name, factory->getType()));
+    if (cached_contexts != cached_contexts_->contexts_.end())
+    {
+      for (const ModelBasedPlanningContextPtr& cached_context : cached_contexts->second)
+        if (cached_context.unique())
+        {
+          RCLCPP_DEBUG(LOGGER, "Reusing cached planning context");
+          context = cached_context;
+          break;
+        }
+    }
+  }
+
+  // Create a new planning context
+  if (!context)
+  {
+    ModelBasedStateSpaceSpecification space_spec(robot_model_, config.group);
+    ModelBasedPlanningContextSpecification context_spec;
+    context_spec.config_ = config.config;
+    context_spec.planner_selector_ = getPlannerSelector();
+    context_spec.constraint_sampler_manager_ = constraint_sampler_manager_;
+    context_spec.state_space_ = factory->getNewStateSpace(space_spec);
+
+    if (factory->getType() == ConstrainedPlanningStateSpace::PARAMETERIZATION_TYPE)
+    {
+      RCLCPP_DEBUG_STREAM(LOGGER, "planning_context_manager: Using OMPL's constrained state space for planning.");
+
+      // Select the correct type of constraints based on the path constraints in the planning request.
+      ompl::base::ConstraintPtr ompl_constraint =
+          createOMPLConstraints(robot_model_, config.group, req.path_constraints);
+
+      // Create a constrained state space of type "projected state space".
+      // Other types are available, so we probably should add another setting to ompl_planning.yaml
+      // to choose between them.
+      context_spec.constrained_state_space_ =
+          std::make_shared<ob::ProjectedStateSpace>(context_spec.state_space_, ompl_constraint);
+
+      // Pass the constrained state space to ompl simple setup through the creation of a
+      // ConstrainedSpaceInformation object. This makes sure the state space is properly initialized.
+      context_spec.ompl_simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(
+          std::make_shared<ob::ConstrainedSpaceInformation>(context_spec.constrained_state_space_));
+    }
+    else
+    {
+      // Choose the correct simple setup type to load
+      context_spec.ompl_simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(context_spec.state_space_);
+    }
+
+    RCLCPP_DEBUG(LOGGER, "Creating new planning context");
+    context = std::make_shared<ModelBasedPlanningContext>(config.name, context_spec, node);
+
+    // Do not cache a constrained planning context, as the constraints could be changed
+    // and need to be parsed again.
+    if (factory->getType() != ConstrainedPlanningStateSpace::PARAMETERIZATION_TYPE)
+    {
+      {
+        std::lock_guard<std::mutex> slock(cached_contexts_->lock_);
+        cached_contexts_->contexts_[std::make_pair(config.name, factory->getType())].push_back(context);
+      }
+    }
+  }
+
+  context->setMaximumPlanningThreads(max_planning_threads_);
+  context->setMaximumGoalSamples(max_goal_samples_);
+  context->setMaximumStateSamplingAttempts(max_state_sampling_attempts_);
+  context->setMaximumGoalSamplingAttempts(max_goal_sampling_attempts_);
+
+  if (max_solution_segment_length_ > std::numeric_limits<double>::epsilon())
+  {
+    context->setMaximumSolutionSegmentLength(max_solution_segment_length_);
+  }
+
+  context->setMinimumWaypointCount(minimum_waypoint_count_);
+  context->setSpecificationConfig(config.config);
+
+  return context;
+}
+
+
 const ModelBasedStateSpaceFactoryPtr& PlanningContextManager::getStateSpaceFactory(const std::string& factory_type) const
 {
   auto f = factory_type.empty() ? state_space_factories_.begin() : state_space_factories_.find(factory_type);
@@ -562,7 +652,7 @@ ModelBasedPlanningContextPtr PlanningContextManager::getPlanningContext(
     factory = getStateSpaceFactory(pc->second.group, req);
   }
 
-  ModelBasedPlanningContextPtr context = getPlanningContext(pc->second, factory, req);
+  ModelBasedPlanningContextPtr context = getPlanningContext(pc->second, factory, req, node);
 
   if (context)
   {

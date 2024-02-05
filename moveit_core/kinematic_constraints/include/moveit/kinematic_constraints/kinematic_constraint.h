@@ -47,6 +47,8 @@
 
 #include <iostream>
 #include <vector>
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
 
 /** \brief Representation and evaluation of kinematic constraints */
 namespace kinematic_constraints
@@ -93,6 +95,7 @@ public:
    * @param [in] model The kinematic model used for constraint evaluation
    */
   KinematicConstraint(const moveit::core::RobotModelConstPtr& model);
+  KinematicConstraint(const moveit::core::RobotModelConstPtr& model, const rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
   virtual ~KinematicConstraint();
 
   /** \brief Clear the stored constraint */
@@ -176,6 +179,7 @@ protected:
   moveit::core::RobotModelConstPtr robot_model_; /**< \brief The kinematic model associated with this constraint */
   double constraint_weight_; /**< \brief The weight of a constraint is a multiplicative factor associated to the
                                 distance computed by the decide() function  */
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
 };
 
 MOVEIT_CLASS_FORWARD(JointConstraint);  // Defines JointConstraintPtr, ConstPtr, WeakPtr... etc
@@ -209,6 +213,12 @@ public:
    */
   JointConstraint(const moveit::core::RobotModelConstPtr& model)
     : KinematicConstraint(model), joint_model_(nullptr), joint_variable_index_(-1)
+  {
+    type_ = JOINT_CONSTRAINT;
+  }
+
+  JointConstraint(const moveit::core::RobotModelConstPtr& model, const rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+    : KinematicConstraint(model, publisher), joint_model_(nullptr), joint_variable_index_(-1)
   {
     type_ = JOINT_CONSTRAINT;
   }
@@ -357,6 +367,12 @@ public:
    */
   OrientationConstraint(const moveit::core::RobotModelConstPtr& model)
     : KinematicConstraint(model), link_model_(nullptr)
+  {
+    type_ = ORIENTATION_CONSTRAINT;
+  }
+
+  OrientationConstraint(const moveit::core::RobotModelConstPtr& model, const rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+    : KinematicConstraint(model, publisher), link_model_(nullptr)
   {
     type_ = ORIENTATION_CONSTRAINT;
   }
@@ -523,6 +539,12 @@ public:
    * @param [in] model The kinematic model used for constraint evaluation
    */
   PositionConstraint(const moveit::core::RobotModelConstPtr& model) : KinematicConstraint(model), link_model_(nullptr)
+  {
+    type_ = POSITION_CONSTRAINT;
+  }
+
+  PositionConstraint(const moveit::core::RobotModelConstPtr& model, const rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+    : KinematicConstraint(model, publisher), link_model_(nullptr)
   {
     type_ = POSITION_CONSTRAINT;
   }
@@ -769,7 +791,7 @@ public:
    * @param [in] model The kinematic model used for constraint evaluation
    */
   VisibilityConstraint(const moveit::core::RobotModelConstPtr& model);
-
+  VisibilityConstraint(const moveit::core::RobotModelConstPtr& model, const rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
   /**
    * \brief Configure the constraint based on a
    * moveit_msgs::msg::VisibilityConstraint
@@ -938,6 +960,57 @@ public:
    * @return Will return true only if all constraints are valid, and false otherwise
    */
   bool add(const std::vector<moveit_msgs::msg::VisibilityConstraint>& vc, const moveit::core::Transforms& tf);
+
+  /**
+   * \brief Add all known constraints
+   *
+   * @param [in] c A message potentially contain vectors of constraints of add types
+   *
+   * @return Whether or not all constraints could be successfully
+   * configured given the contents of the message.  The
+   * KinematicConstraintSet can still be used even if the addition
+   * returns false.
+   */
+  bool add(const moveit_msgs::msg::Constraints& c, const moveit::core::Transforms& tf, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+
+  /**
+   * \brief Add a vector of joint constraints
+   *
+   * @param [in] jc A vector of joint constraints
+   *
+   * @return Will return true only if all constraints are valid, and false otherwise
+   */
+  bool add(const std::vector<moveit_msgs::msg::JointConstraint>& jc, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+
+  /**
+   * \brief Add a vector of position constraints
+   *
+   * @param [in] pc A vector of position constraints
+   *
+   * @return Will return true only if all constraints are valid, and false otherwise
+   */
+  bool add(const std::vector<moveit_msgs::msg::PositionConstraint>& pc, const moveit::core::Transforms& tf,
+           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+
+  /**
+   * \brief Add a vector of orientation constraints
+   *
+   * @param [in] oc A vector of orientation constraints
+   *
+   * @return Will return true only if all constraints are valid, and false otherwise
+   */
+  bool add(const std::vector<moveit_msgs::msg::OrientationConstraint>& oc, const moveit::core::Transforms& tf,
+           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+
+  /**
+   * \brief Add a vector of visibility constraints
+   *
+   * @param [in] vc A vector of visibility constraints
+   *
+   * @return Will return true only if all constraints are valid, and false otherwise
+   */
+  bool add(const std::vector<moveit_msgs::msg::VisibilityConstraint>& vc, const moveit::core::Transforms& tf,
+           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
 
   /**
    * \brief Determines whether all constraints are satisfied by state,

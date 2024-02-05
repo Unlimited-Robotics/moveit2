@@ -89,7 +89,8 @@ class ModelBasedPlanningContext : public planning_interface::PlanningContext
 {
 public:
   ModelBasedPlanningContext(const std::string& name, const ModelBasedPlanningContextSpecification& spec);
-
+  ModelBasedPlanningContext(const std::string& name, const ModelBasedPlanningContextSpecification& spec,
+                            const rclcpp::Node::SharedPtr& node);
   ~ModelBasedPlanningContext() override
   {
   }
@@ -403,6 +404,8 @@ protected:
 
   /// tool used to compute multiple plans in parallel; this uses the problem definition maintained by ompl_simple_setup_
   ot::ParallelPlan ompl_parallel_plan_;
+
+  rclcpp::Node::SharedPtr node_;
 
   std::vector<int> space_signature_;
 

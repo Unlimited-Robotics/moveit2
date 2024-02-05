@@ -100,6 +100,15 @@ ompl_interface::ModelBasedPlanningContext::ModelBasedPlanningContext(const std::
   constraints_library_ = std::make_shared<ConstraintsLibrary>(this);
 }
 
+ompl_interface::ModelBasedPlanningContext::ModelBasedPlanningContext(const std::string& name,
+                                                                     const ModelBasedPlanningContextSpecification& spec,
+                                                                     const rclcpp::Node::SharedPtr& node)
+  : ModelBasedPlanningContext(name, spec)
+{
+  node_ = node;
+  RCLCPP_INFO(LOGGER, "Using ModelBasedPlanningContext with node !!! :)");
+}
+
 void ompl_interface::ModelBasedPlanningContext::configure(const rclcpp::Node::SharedPtr& node,
                                                           bool use_constraints_approximations)
 {
@@ -660,13 +669,14 @@ bool ompl_interface::ModelBasedPlanningContext::setGoalConstraints(
     const moveit_msgs::msg::Constraints& path_constraints, moveit_msgs::msg::MoveItErrorCodes* error)
 {
   // ******************* check if the input is correct
+  auto publisher = node_->create_publisher<std_msgs::msg::String>("topic", 10);
   goal_constraints_.clear();
   for (const moveit_msgs::msg::Constraints& goal_constraint : goal_constraints)
   {
     moveit_msgs::msg::Constraints constr = kinematic_constraints::mergeConstraints(goal_constraint, path_constraints);
     kinematic_constraints::KinematicConstraintSetPtr kset(
         new kinematic_constraints::KinematicConstraintSet(getRobotModel()));
-    kset->add(constr, getPlanningScene()->getTransforms());
+    kset->add(constr, getPlanningScene()->getTransforms(), publisher);
     if (!kset->empty())
     {
       goal_constraints_.push_back(kset);
@@ -793,6 +803,7 @@ bool ompl_interface::ModelBasedPlanningContext::solve(planning_interface::Motion
   else
   {
     RCLCPP_INFO(LOGGER, "Unable to solve the planning problem");
+    res.error_code_.val = moveit_msgs::msg::MoveItErrorCodes::PLANNING_FAILED;
     return false;
   }
 }
@@ -919,8 +930,10 @@ const moveit_msgs::msg::MoveItErrorCodes ompl_interface::ModelBasedPlanningConte
             ompl_parallel_plan_.addPlanner(ompl::tools::SelfConfig::getDefaultPlanner(ompl_simple_setup_->getGoal()));
           }
         }
-
-        bool r = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_) == ompl::base::PlannerStatus::EXACT_SOLUTION;
+        auto code = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_);
+        ompl::base::PlannerStatus::StatusType statusEnum = code;
+        RCLCPP_ERROR(LOGGER, "code of the ompl solving %d !!", statusEnum);
+        bool r = code == ompl::base::PlannerStatus::EXACT_SOLUTION;
         // Was this latest call successful too?
         result.val = (result.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS && r) ?
                          moveit_msgs::msg::MoveItErrorCodes::SUCCESS :
@@ -944,8 +957,10 @@ const moveit_msgs::msg::MoveItErrorCodes ompl_interface::ModelBasedPlanningConte
             ompl_parallel_plan_.addPlanner(ompl::tools::SelfConfig::getDefaultPlanner(ompl_simple_setup_->getGoal()));
           }
         }
-
-        bool r = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_) == ompl::base::PlannerStatus::EXACT_SOLUTION;
+        auto code = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_);
+        ompl::base::PlannerStatus::StatusType statusEnum = code;
+        RCLCPP_ERROR(LOGGER, "code of the ompl solving %d", statusEnum);
+        bool r = code == ompl::base::PlannerStatus::EXACT_SOLUTION;
         // Was this latest call successful too?
         result.val = (result.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS && r) ?
                          moveit_msgs::msg::MoveItErrorCodes::SUCCESS :

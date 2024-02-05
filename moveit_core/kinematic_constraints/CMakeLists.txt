@@ -20,6 +20,7 @@ ament_target_dependencies(${MOVEIT_LIB_NAME}
   tf2_geometry_msgs
   geometry_msgs
   visualization_msgs
+  std_msgs
   tf2_eigen
 )
 

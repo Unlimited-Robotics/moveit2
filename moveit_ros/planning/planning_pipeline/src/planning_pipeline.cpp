@@ -271,7 +271,9 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     {
       planning_interface::PlanningContextPtr context =
           planner_instance_->getPlanningContext(planning_scene, req, res.error_code_);
-      solved = context ? context->solve(res) : false;
+      RCLCPP_ERROR(LOGGER, "Planning context error %d", res.error_code_.val);
+      if (res.error_code_.val==res.error_code_.SUCCESS)
+        solved = context ? context->solve(res) : false;
     }
   }
   catch (std::exception& ex)
