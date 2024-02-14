@@ -346,6 +346,11 @@ public:
    * */
   virtual void configure(const rclcpp::Node::SharedPtr& node, bool use_constraints_approximations);
 
+  virtual rclcpp::Node::SharedPtr getNode() const
+  {
+    return node_;
+  }
+  
 protected:
   void preSolve();
   void postSolve();

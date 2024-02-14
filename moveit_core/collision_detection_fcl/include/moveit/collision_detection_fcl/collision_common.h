@@ -280,6 +280,12 @@ struct FCLManager
  *   \return True terminates the collision check, false continues it to the next pair of objects */
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
+/** \brief Generic function that enables to publish contacts found, return callback function
+ * but with a publisher that register the contacts between objects
+*/
+fcl::CollisionCallBack<double>
+getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+
 /** \brief Callback function used by the FCLManager used for each pair of collision objects to
  *   calculate collisions and distances.
  *

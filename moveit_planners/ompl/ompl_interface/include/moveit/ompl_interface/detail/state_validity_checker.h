@@ -50,6 +50,7 @@
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
 #include <moveit/collision_detection/collision_common.h>
 #include <ompl/base/StateValidityChecker.h>
+#include "std_msgs/msg/string.hpp"
 
 namespace ompl_interface
 {
@@ -96,6 +97,7 @@ protected:
   collision_detection::CollisionRequest collision_request_with_distance_verbose_;
 
   collision_detection::CollisionRequest collision_request_with_cost_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   bool verbose_;
 };
 

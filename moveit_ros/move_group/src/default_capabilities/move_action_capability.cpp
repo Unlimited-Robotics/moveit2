@@ -202,6 +202,7 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const std::shared_ptr<MGAc
   {
     RCLCPP_ERROR(LOGGER, "Planning pipeline threw an exception: %s", ex.what());
     res.error_code_.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
+    res.error_code_.message = "Planning pipeline threw an exception: " +std::string(ex.what());
   }
 
   convertToMsg(res.trajectory_, action_res->trajectory_start, action_res->planned_trajectory);

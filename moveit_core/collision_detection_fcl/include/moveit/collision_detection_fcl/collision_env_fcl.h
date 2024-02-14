@@ -82,6 +82,51 @@ public:
   void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
                            const moveit::core::RobotState& state2) const override;
 
+  /*----------------------------------*/
+
+  /** \brief Check whether the robot model is in collision with itself or the world at a particular state.
+   *  Any collision between any pair of links is checked for, NO collisions are ignored.
+   *  @param req A CollisionRequest object that encapsulates the collision request
+   *  @param res A CollisionResult object that encapsulates the collision result
+   *  @param state The kinematic state for which checks are being made         */
+  virtual void checkCollision(const CollisionRequest& req, CollisionResult& res,
+                              const moveit::core::RobotState& state,
+                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  /** \brief Check whether the robot model is in collision with itself or the world at a particular state.
+   *  Allowed collisions specified by the allowed collision matrix are taken into account.
+   *  @param req A CollisionRequest object that encapsulates the collision request
+   *  @param res A CollisionResult object that encapsulates the collision result
+   *  @param state The kinematic state for which checks are being made
+   *  @param acm The allowed collision matrix. */
+  virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                              const AllowedCollisionMatrix& acm,
+                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                          const AllowedCollisionMatrix& acm,
+                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                           const AllowedCollisionMatrix& acm,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
+                           const moveit::core::RobotState& state2, const AllowedCollisionMatrix& acm,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
+                           const moveit::core::RobotState& state2,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const override;
+
+  /*----------------------------------*/
+
   void distanceSelf(const DistanceRequest& req, DistanceResult& res,
                     const moveit::core::RobotState& state) const override;
 
@@ -107,6 +152,15 @@ protected:
   /** \brief Bundles the different checkRobotCollision functions into a single function */
   void checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res,
                                  const moveit::core::RobotState& state, const AllowedCollisionMatrix* acm) const;
+
+  void checkSelfCollisionHelper(const CollisionRequest& req, CollisionResult& res,
+                                const moveit::core::RobotState& state, const AllowedCollisionMatrix* acm,
+                                rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const;
+
+  /** \brief Bundles the different checkRobotCollision functions into a single function */
+  void checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res,
+                                 const moveit::core::RobotState& state, const AllowedCollisionMatrix* acm,
+                                 rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const;
 
   /** \brief Construct an FCL collision object from MoveIt's World::Object. */
   void constructFCLObjectWorld(const World::Object* obj, FCLObject& fcl_obj) const;

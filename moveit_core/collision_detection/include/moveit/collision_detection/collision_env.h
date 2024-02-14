@@ -43,6 +43,7 @@
 #include <moveit_msgs/msg/link_scale.hpp>
 #include <moveit/collision_detection/world.h>
 
+#include "std_msgs/msg/string.hpp"
 namespace collision_detection
 {
 MOVEIT_CLASS_FORWARD(CollisionEnv);  // Defines CollisionEnvPtr, ConstPtr, WeakPtr... etc
@@ -155,6 +156,103 @@ public:
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res,
                                    const moveit::core::RobotState& state1,
                                    const moveit::core::RobotState& state2) const = 0;
+
+  /*-----------------------------------------------*/
+  /** \brief Check whether the robot model is in collision with itself or the world at a particular state.
+   *  Any collision between any pair of links is checked for, NO collisions are ignored.
+   *  @param req A CollisionRequest object that encapsulates the collision request
+   *  @param res A CollisionResult object that encapsulates the collision result
+   *  @param state The kinematic state for which checks are being made         */
+  virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)publisher;
+  }
+
+  /** \brief Check whether the robot model is in collision with itself or the world at a particular state.
+   *  Allowed collisions specified by the allowed collision matrix are taken into account.
+   *  @param req A CollisionRequest object that encapsulates the collision request
+   *  @param res A CollisionResult object that encapsulates the collision result
+   *  @param state The kinematic state for which checks are being made
+   *  @param acm The allowed collision matrix. */
+  virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                              const AllowedCollisionMatrix& acm,
+                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)acm;
+    (void)publisher;
+  }
+
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)publisher;
+  }
+
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                          const AllowedCollisionMatrix& acm,
+                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)acm;
+    (void)publisher;
+  }
+
+  virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)publisher;
+  }
+
+  virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
+                           const AllowedCollisionMatrix& acm,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state;
+    (void)acm;
+    (void)publisher;
+  }
+
+  virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
+                           const moveit::core::RobotState& state2, const AllowedCollisionMatrix& acm,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state1;
+    (void)state2;
+    (void)acm;
+    (void)publisher;
+  }
+
+  virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
+                           const moveit::core::RobotState& state2,
+                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+  {
+    (void)req;
+    (void)res;
+    (void)state1;
+    (void)state2;
+
+    (void)publisher;
+  }
+  /*-----------------------------------------------*/
 
   /** \brief The distance to self-collision given the robot is at state \e state.
       @param req A DistanceRequest object that encapsulates the distance request
