@@ -34,6 +34,7 @@ endif()
 ament_target_dependencies(${MOVEIT_LIB_NAME}
   moveit_core
   moveit_msgs
+  std_msgs
   moveit_ros_planning
   rclcpp
   pluginlib

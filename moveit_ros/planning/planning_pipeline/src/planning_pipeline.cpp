@@ -271,7 +271,9 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     {
       planning_interface::PlanningContextPtr context =
           planner_instance_->getPlanningContext(planning_scene, req, res.error_code_);
-      solved = context ? context->solve(res) : false;
+      RCLCPP_ERROR(LOGGER, "Planning context error %d", res.error_code_.val);
+      if (res.error_code_.val == res.error_code_.SUCCESS)
+        solved = context ? context->solve(res) : false;
     }
   }
   catch (std::exception& ex)
@@ -325,11 +327,12 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
             std::stringstream ss;
             for (std::size_t it : index)
               ss << it << " ";
-
-            RCLCPP_ERROR_STREAM(LOGGER, "Computed path is not valid. Invalid states at index locations: [ "
-                                            << ss.str() << "] out of " << state_count
-                                            << ". Explanations follow in command line. Contacts are published on "
-                                            << contacts_publisher_->get_topic_name());
+            std::stringstream ss_error;
+            ss_error << "Computed path is not valid. Invalid states at index locations: [ " << ss.str() << "] out of "
+                     << state_count ;
+            RCLCPP_ERROR_STREAM(LOGGER, ss_error.str()<< ". Explanations follow in command line. Contacts are published on "
+                     << contacts_publisher_->get_topic_name());
+            res.error_code_.message = ss_error.str();
 
             // call validity checks in verbose mode for the problematic states
             for (std::size_t it : index)

@@ -112,8 +112,18 @@ bool StateValidityChecker::isValid(const ompl::base::State* state, bool verbose)
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state);
+  }
   if (!res.collision)
   {
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markValid();
@@ -171,8 +181,19 @@ bool StateValidityChecker::isValid(const ompl::base::State* state, double& dist,
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(verbose ? collision_request_with_distance_verbose_ :
+                                                                    collision_request_with_distance_,
+                                                          res, *robot_state, publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
+  }
   dist = res.distance;
   return !res.collision;
 }
@@ -187,7 +208,16 @@ double StateValidityChecker::cost(const ompl::base::State* state) const
 
   // Calculates cost from a summation of distance to obstacles times the size of the obstacle
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state, publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state);
+  }
 
   for (const collision_detection::CostSource& cost_source : res.cost_sources)
   {
@@ -204,7 +234,17 @@ double StateValidityChecker::clearance(const ompl::base::State* state) const
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(collision_request_with_distance_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(collision_request_with_distance_, res, *robot_state,
+                                                          publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state);
+  }
   return res.collision ? 0.0 : (res.distance < 0.0 ? std::numeric_limits<double>::infinity() : res.distance);
 }
 
@@ -252,8 +292,18 @@ bool ConstrainedPlanningStateValidityChecker::isValid(const ompl::base::State* w
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state);
+  }
   if (!res.collision)
   {
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markValid();
@@ -310,8 +360,19 @@ bool ConstrainedPlanningStateValidityChecker::isValid(const ompl::base::State* w
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
+  if (planning_context_->getNode())
+  {
+    auto publisher =
+        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+    planning_context_->getPlanningScene()->checkCollision(verbose ? collision_request_with_distance_verbose_ :
+                                                                    collision_request_with_distance_,
+                                                          res, *robot_state, publisher);
+  }
+  else
+  {
+    planning_context_->getPlanningScene()->checkCollision(
+        verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
+  }
   dist = res.distance;
   return !res.collision;
 }

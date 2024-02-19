@@ -220,6 +220,11 @@ protected:
                                                   const ModelBasedStateSpaceFactoryPtr& factory,
                                                   const moveit_msgs::msg::MotionPlanRequest& req) const;
 
+  ModelBasedPlanningContextPtr getPlanningContext(const planning_interface::PlannerConfigurationSettings& config,
+                                                  const ModelBasedStateSpaceFactoryPtr& factory,
+                                                  const moveit_msgs::msg::MotionPlanRequest& req, 
+                                                  const rclcpp::Node::SharedPtr& node) const;                                                
+
   const ModelBasedStateSpaceFactoryPtr& getStateSpaceFactory(const std::string& factory_type) const;
   const ModelBasedStateSpaceFactoryPtr& getStateSpaceFactory(const std::string& group_name,
                                                              const moveit_msgs::msg::MotionPlanRequest& req) const;

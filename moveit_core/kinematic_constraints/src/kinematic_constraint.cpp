@@ -55,6 +55,7 @@
 
 namespace kinematic_constraints
 {
+
 // Logger
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_kinematic_constraints.kinematic_constraints");
 
@@ -120,12 +121,20 @@ CalcEulerAngles(const Eigen::MatrixBase<Derived>& R)
   return { res, false };
 }
 
+
 KinematicConstraint::KinematicConstraint(const moveit::core::RobotModelConstPtr& model)
   : type_(UNKNOWN_CONSTRAINT), robot_model_(model), constraint_weight_(std::numeric_limits<double>::epsilon())
 {
 }
 
 KinematicConstraint::~KinematicConstraint() = default;
+
+KinematicConstraint::KinematicConstraint(const moveit::core::RobotModelConstPtr& model,
+                                         const rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+  : KinematicConstraint(model)
+{
+    publisher_ = publisher;
+}
 
 bool JointConstraint::configure(const moveit_msgs::msg::JointConstraint& jc)
 {
@@ -300,6 +309,17 @@ ConstraintEvaluationResult JointConstraint::decide(const moveit::core::RobotStat
                 "tolerance_above: %f, tolerance_below: %f",
                 result ? "satisfied" : "violated", joint_variable_name_.c_str(), current_joint_position,
                 joint_position_, joint_tolerance_above_, joint_tolerance_below_);
+  if (!result && publisher_)
+  {
+    moveit_msgs::msg::MoveItErrorCodes msg;
+    msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+    msg.message = "Constraint violated:: Joint name: '" + joint_variable_name_ +
+               "', actual value: " + std::to_string(current_joint_position) +
+               ", desired value: " + std::to_string(joint_position_) +
+               ", tolerance_above: " + std::to_string(joint_tolerance_above_) +
+               ", tolerance_below:" + std::to_string(joint_tolerance_below_);
+    publisher_->publish(msg);
+  }
   return ConstraintEvaluationResult(result, constraint_weight_ * fabs(dif));
 }
 
@@ -477,10 +497,10 @@ bool PositionConstraint::equal(const KinematicConstraint& other, double margin) 
 }
 
 // helper function to avoid code duplication
-static inline ConstraintEvaluationResult finishPositionConstraintDecision(const Eigen::Vector3d& pt,
-                                                                          const Eigen::Vector3d& desired,
-                                                                          const std::string& name, double weight,
-                                                                          bool result, bool verbose)
+static inline ConstraintEvaluationResult
+finishPositionConstraintDecision(const Eigen::Vector3d& pt, const Eigen::Vector3d& desired, const std::string& name,
+                                 double weight, bool result, bool verbose,
+                                 const rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
 {
   double dx = desired.x() - pt.x();
   double dy = desired.y() - pt.y();
@@ -491,6 +511,17 @@ static inline ConstraintEvaluationResult finishPositionConstraintDecision(const 
                 result ? "satisfied" : "violated", name.c_str(), desired.x(), desired.y(), desired.z(), pt.x(), pt.y(),
                 pt.z());
     RCLCPP_INFO(LOGGER, "Differences %g %g %g", dx, dy, dz);
+  }
+  if (!result && publisher)
+  {
+    moveit_msgs::msg::MoveItErrorCodes msg;
+    msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+    msg.message = "Position constraint violated on link '" + name + "', actual value: " + std::to_string(pt.x()) + " ," +
+               std::to_string(pt.y()) + " ," + std::to_string(pt.z()) +
+               ", desired value: " + std::to_string(desired.x()) + " ," + std::to_string(desired.y()) + " ," +
+               std::to_string(desired.z());
+
+    publisher->publish(msg);
   }
   return ConstraintEvaluationResult(result, weight * sqrt(dx * dx + dy * dy + dz * dz));
 }
@@ -509,10 +540,10 @@ ConstraintEvaluationResult PositionConstraint::decide(const moveit::core::RobotS
       bool result = constraint_region_[i]->cloneAt(tmp)->containsPoint(pt, verbose);
       if (result || (i + 1 == constraint_region_pose_.size()))
         return finishPositionConstraintDecision(pt, tmp.translation(), link_model_->getName(), constraint_weight_,
-                                                result, verbose);
+                                                result, verbose, publisher_);
       else
         finishPositionConstraintDecision(pt, tmp.translation(), link_model_->getName(), constraint_weight_, result,
-                                         verbose);
+                                         verbose, publisher_);
     }
   }
   else
@@ -522,10 +553,11 @@ ConstraintEvaluationResult PositionConstraint::decide(const moveit::core::RobotS
       bool result = constraint_region_[i]->containsPoint(pt, true);
       if (result || (i + 1 == constraint_region_.size()))
         return finishPositionConstraintDecision(pt, constraint_region_[i]->getPose().translation(),
-                                                link_model_->getName(), constraint_weight_, result, verbose);
+                                                link_model_->getName(), constraint_weight_, result, verbose,
+                                                publisher_);
       else
         finishPositionConstraintDecision(pt, constraint_region_[i]->getPose().translation(), link_model_->getName(),
-                                         constraint_weight_, result, verbose);
+                                         constraint_weight_, result, verbose, publisher_);
     }
   }
   return ConstraintEvaluationResult(false, 0.0);
@@ -740,6 +772,18 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
                 xyz_rotation(2), absolute_x_axis_tolerance_, absolute_y_axis_tolerance_, absolute_z_axis_tolerance_);
   }
 
+  if (!result && publisher_)
+  {
+    moveit_msgs::msg::MoveItErrorCodes msg;
+    msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+    msg.message = "Orientation constraint violated on link '" + link_model_->getName() +
+               "', Error: " + std::to_string(xyz_rotation(0)) + " ," + std::to_string(xyz_rotation(1)) + " ," +
+               std::to_string(xyz_rotation(2)) + ", desired value: " + std::to_string(absolute_x_axis_tolerance_) +
+               " ," + std::to_string(absolute_y_axis_tolerance_) + " ," + std::to_string(absolute_z_axis_tolerance_);
+
+    publisher_->publish(msg);
+  }
+
   return ConstraintEvaluationResult(result, constraint_weight_ * (xyz_rotation(0) + xyz_rotation(1) + xyz_rotation(2)));
 }
 
@@ -757,6 +801,13 @@ void OrientationConstraint::print(std::ostream& out) const
 
 VisibilityConstraint::VisibilityConstraint(const moveit::core::RobotModelConstPtr& model)
   : KinematicConstraint(model), collision_env_(std::make_shared<collision_detection::CollisionEnvFCL>(model))
+{
+  type_ = VISIBILITY_CONSTRAINT;
+}
+
+VisibilityConstraint::VisibilityConstraint(const moveit::core::RobotModelConstPtr& model,
+                                           const rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+  : KinematicConstraint(model, publisher), collision_env_(std::make_shared<collision_detection::CollisionEnvFCL>(model))
 {
   type_ = VISIBILITY_CONSTRAINT;
 }
@@ -1041,6 +1092,7 @@ void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
 
 ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::RobotState& state, bool verbose) const
 {
+  RCLCPP_INFO(LOGGER, "Visibility constraint decide !!");
   if (target_radius_ <= std::numeric_limits<double>::epsilon())
     return ConstraintEvaluationResult(true, 0.0);
 
@@ -1067,6 +1119,16 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
         if (verbose)
           RCLCPP_INFO(LOGGER, "Visibility constraint is violated because the sensor is looking at "
                               "the wrong side");
+
+        if (publisher_)
+        {
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+          msg.message =
+              "Visibility constraint is violated because the sensor is looking at " + std::string("the wrong side");
+
+          publisher_->publish(msg);
+        }
         return ConstraintEvaluationResult(false, 0.0);
       }
       if (max_view_angle_ < ang)
@@ -1076,6 +1138,16 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
                       "Visibility constraint is violated because the view angle is %lf "
                       "(above the maximum allowed of %lf)",
                       ang, max_view_angle_);
+
+        if (publisher_)
+        {
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+          msg.message = "Visibility constraint is violated because the view angle is " + std::to_string(ang) +
+                     " (above the maximum allowed of " + std::to_string(max_view_angle_) + ")";
+
+          publisher_->publish(msg);
+        }
         return ConstraintEvaluationResult(false, 0.0);
       }
     }
@@ -1088,6 +1160,17 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
         if (verbose)
           RCLCPP_INFO(LOGGER, "Visibility constraint is violated because the sensor is looking at "
                               "the wrong side");
+
+        if (publisher_)
+        {
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+          msg.message =
+              "Visibility constraint is violated because the sensor is looking at " + std::string("the wrong side");
+
+          publisher_->publish(msg);
+        }
+
         return ConstraintEvaluationResult(false, 0.0);
       }
 
@@ -1099,6 +1182,15 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
                       "Visibility constraint is violated because the range angle is %lf "
                       "(above the maximum allowed of %lf)",
                       ang, max_range_angle_);
+        if (publisher_)
+        {
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
+          msg.message = "Visibility constraint is violated because the view angle is " + std::to_string(ang) +
+                     " (above the maximum allowed of " + std::to_string(max_view_angle_) + ")";
+
+          publisher_->publish(msg);
+        }
         return ConstraintEvaluationResult(false, 0.0);
       }
     }
@@ -1253,6 +1345,79 @@ bool KinematicConstraintSet::add(const moveit_msgs::msg::Constraints& c, const m
   bool p = add(c.position_constraints, tf);
   bool o = add(c.orientation_constraints, tf);
   bool v = add(c.visibility_constraints, tf);
+  return j && p && o && v;
+}
+
+bool KinematicConstraintSet::add(const std::vector<moveit_msgs::msg::JointConstraint>& jc, rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+{
+  bool result = true;
+  for (const moveit_msgs::msg::JointConstraint& joint_constraint : jc)
+  {
+    JointConstraint* ev = new JointConstraint(robot_model_, publisher);
+    bool u = ev->configure(joint_constraint);
+    result = result && u;
+    kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
+    joint_constraints_.push_back(joint_constraint);
+    all_constraints_.joint_constraints.push_back(joint_constraint);
+  }
+  return result;
+}
+
+bool KinematicConstraintSet::add(const std::vector<moveit_msgs::msg::PositionConstraint>& pc,
+                                 const moveit::core::Transforms& tf, rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+{
+  bool result = true;
+  for (const moveit_msgs::msg::PositionConstraint& position_constraint : pc)
+  {
+    PositionConstraint* ev = new PositionConstraint(robot_model_, publisher);
+    bool u = ev->configure(position_constraint, tf);
+    result = result && u;
+    kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
+    position_constraints_.push_back(position_constraint);
+    all_constraints_.position_constraints.push_back(position_constraint);
+  }
+  return result;
+}
+
+bool KinematicConstraintSet::add(const std::vector<moveit_msgs::msg::OrientationConstraint>& oc,
+                                 const moveit::core::Transforms& tf, rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+{
+  bool result = true;
+  for (const moveit_msgs::msg::OrientationConstraint& orientation_constraint : oc)
+  {
+    OrientationConstraint* ev = new OrientationConstraint(robot_model_, publisher);
+    bool u = ev->configure(orientation_constraint, tf);
+    result = result && u;
+    kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
+    orientation_constraints_.push_back(orientation_constraint);
+    all_constraints_.orientation_constraints.push_back(orientation_constraint);
+  }
+  return result;
+}
+
+bool KinematicConstraintSet::add(const std::vector<moveit_msgs::msg::VisibilityConstraint>& vc,
+                                 const moveit::core::Transforms& tf, rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+{
+  bool result = true;
+  for (const moveit_msgs::msg::VisibilityConstraint& visibility_constraint : vc)
+  {
+    VisibilityConstraint* ev = new VisibilityConstraint(robot_model_, publisher);
+    bool u = ev->configure(visibility_constraint, tf);
+    result = result && u;
+    kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
+    visibility_constraints_.push_back(visibility_constraint);
+    all_constraints_.visibility_constraints.push_back(visibility_constraint);
+  }
+  return result;
+}
+
+bool KinematicConstraintSet::add(const moveit_msgs::msg::Constraints& c, const moveit::core::Transforms& tf,
+                                 rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
+{
+  bool j = add(c.joint_constraints, publisher);
+  bool p = add(c.position_constraints, tf, publisher);
+  bool o = add(c.orientation_constraints, tf, publisher);
+  bool v = add(c.visibility_constraints, tf, publisher);
   return j && p && o && v;
 }
 
