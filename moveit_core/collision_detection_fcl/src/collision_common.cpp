@@ -59,7 +59,7 @@ namespace collision_detection
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_collision_detection_fcl.collision_common");
 
 fcl::CollisionCallBack<double>
-getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+getCollisionCallback(rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
 {
   auto myLambda = [publisher](fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data) -> bool { 
     CollisionData* cdata = reinterpret_cast<CollisionData*>(data);
@@ -217,8 +217,9 @@ getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publish
               if (cdata->req_->verbose)
                 RCLCPP_INFO(LOGGER, "Found unacceptable contact between '%s' and '%s'. Contact was stored.",
                             cd1->getID().c_str(), cd2->getID().c_str());
-              std_msgs::msg::String msg;
-              msg.data = "Found unacceptable contact between '" + cd1->getID() + "' and '" + cd2->getID() +
+              moveit_msgs::msg::MoveItErrorCodes msg;
+              msg.val = msg.SOME_STATE_IN_COLLISION;
+              msg.message = "Found unacceptable contact between '" + cd1->getID() + "' and '" + cd2->getID() +
                          "'. Contact was stored.";
               publisher->publish(msg);
             }
@@ -228,8 +229,9 @@ getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publish
                           "(type '%s'). Contact was stored.",
                           cd1->getID().c_str(), cd1->getTypeString().c_str(), cd2->getID().c_str(),
                           cd2->getTypeString().c_str());
-            std_msgs::msg::String msg;
-            msg.data = "Found unacceptable contact between '" + cd1->getID() + " (type '" + cd1->getTypeString() +
+            moveit_msgs::msg::MoveItErrorCodes msg;
+            msg.val = msg.SOME_STATE_IN_COLLISION;
+            msg.message = "Found unacceptable contact between '" + cd1->getID() + " (type '" + cd1->getTypeString() +
                        "')" + "' and '" + cd2->getID() + "'. Contact was stored.";
             publisher->publish(msg);
             cdata->res_->collision = true;
@@ -287,8 +289,9 @@ getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publish
                         "which constitute a collision. %d contacts will be stored",
                         num_contacts_initial, cd1->getID().c_str(), cd1->getTypeString().c_str(), cd2->getID().c_str(),
                         cd2->getTypeString().c_str(), num_contacts);
-          std_msgs::msg::String msg;
-          msg.data = "Found " + std::to_string(num_contacts_initial) + " contacts between '" + cd1->getID() +
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_IN_COLLISION;
+          msg.message = "Found " + std::to_string(num_contacts_initial) + " contacts between '" + cd1->getID() +
                      "' (type '" + cd1->getTypeString() + "') and '" + cd2->getID() + "' (type '" +
                      cd2->getTypeString() + "'), which constitute a collision. " + std::to_string(num_contacts) +
                      " contacts will be stored";
@@ -339,8 +342,9 @@ getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publish
                         "Contact information is not stored.",
                         cd1->getID().c_str(), cd1->getTypeString().c_str(), cd2->getID().c_str(),
                         cd2->getTypeString().c_str());
-          std_msgs::msg::String msg;
-          msg.data = "Found a contact between '" + cd1->getID() +
+          moveit_msgs::msg::MoveItErrorCodes msg;
+          msg.val = msg.SOME_STATE_IN_COLLISION;
+          msg.message = "Found a contact between '" + cd1->getID() +
                      "' (type '" + cd1->getTypeString() + "') and '" + cd2->getID() + "' (type '" +
                      cd2->getTypeString() + "'), which constitute a collision. " + std::to_string(num_contacts) +
                      " contacts will be stored";

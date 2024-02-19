@@ -336,7 +336,7 @@ void CollisionEnvFCL::checkRobotCollisionHelper(const CollisionRequest& req, Col
 /*----------------------------------------*/
 void CollisionEnvFCL::checkCollision(const CollisionRequest& req, CollisionResult& res,
                                   const moveit::core::RobotState& state,
-                                  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                  rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkSelfCollision(req, res, state, publisher);
   if (!res.collision || (req.contacts && res.contacts.size() < req.max_contacts))
@@ -345,7 +345,7 @@ void CollisionEnvFCL::checkCollision(const CollisionRequest& req, CollisionResul
 
 void CollisionEnvFCL::checkCollision(const CollisionRequest& req, CollisionResult& res,
                                   const moveit::core::RobotState& state, const AllowedCollisionMatrix& acm,
-                                  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                  rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkSelfCollision(req, res, state, acm, publisher);
   if (!res.collision || (req.contacts && res.contacts.size() < req.max_contacts))
@@ -354,14 +354,14 @@ void CollisionEnvFCL::checkCollision(const CollisionRequest& req, CollisionResul
 
 void CollisionEnvFCL::checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
                                          const moveit::core::RobotState& state,
-                                         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                         rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkSelfCollisionHelper(req, res, state, nullptr, publisher);
 }
 
 void CollisionEnvFCL::checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
                                          const moveit::core::RobotState& state, const AllowedCollisionMatrix& acm,
-                                         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                         rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkSelfCollisionHelper(req, res, state, &acm, publisher);
 }
@@ -369,7 +369,7 @@ void CollisionEnvFCL::checkSelfCollision(const CollisionRequest& req, CollisionR
 void CollisionEnvFCL::checkSelfCollisionHelper(const CollisionRequest& req, CollisionResult& res,
                                                const moveit::core::RobotState& state,
                                                const AllowedCollisionMatrix* acm,
-                                               rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                               rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   FCLManager manager;
   allocSelfCollisionBroadPhase(state, manager);
@@ -391,7 +391,7 @@ void CollisionEnvFCL::checkSelfCollisionHelper(const CollisionRequest& req, Coll
 
 void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& req, CollisionResult& res,
                                           const moveit::core::RobotState& state,
-                                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkRobotCollisionHelper(req, res, state, nullptr, publisher);
 }
@@ -399,7 +399,7 @@ void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& req, Collision
 void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& req, CollisionResult& res,
                                           const moveit::core::RobotState& state,
                                           const AllowedCollisionMatrix& acm,
-                                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkRobotCollisionHelper(req, res, state, &acm, publisher);
 }
@@ -407,7 +407,7 @@ void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& req, Collision
 void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& /*req*/, CollisionResult& /*res*/,
                                           const moveit::core::RobotState& /*state1*/,
                                           const moveit::core::RobotState& /*state2*/,
-                                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr /*publisher*/) const
+                                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr /*publisher*/) const
 {
   RCLCPP_ERROR(LOGGER, "Continuous collision not implemented");
 }
@@ -416,7 +416,7 @@ void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& /*req*/, Colli
                                           const moveit::core::RobotState& /*state1*/,
                                           const moveit::core::RobotState& /*state2*/,
                                           const AllowedCollisionMatrix& /*acm*/,
-                                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr /*publisher*/) const
+                                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr /*publisher*/) const
 {
   RCLCPP_ERROR(LOGGER, "Not implemented");
 }
@@ -424,7 +424,7 @@ void CollisionEnvFCL::checkRobotCollision(const CollisionRequest& /*req*/, Colli
 void CollisionEnvFCL::checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res,
                                                 const moveit::core::RobotState& state,
                                                 const AllowedCollisionMatrix* acm,
-                                                rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                                rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   FCLObject fcl_obj;
   constructFCLObjectRobot(state, fcl_obj);

@@ -477,11 +477,11 @@ public:
   /** \brief Check whether the current state is in collision, and if needed, updates the collision transforms of the
    * current state before the computation. */
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher);
 
   /** \brief Check whether the current state is in collision. The current state is expected to be updated. */
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     checkCollision(req, res, getCurrentState(), publisher);
   }
@@ -490,7 +490,7 @@ public:
       a non-const \e robot_state and calls updateCollisionBodyTransforms() on it. */
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                       moveit::core::RobotState& robot_state,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkCollision(req, res, static_cast<const moveit::core::RobotState&>(robot_state), publisher);
@@ -501,14 +501,14 @@ public:
    * expected to be up to date. */
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                       const moveit::core::RobotState& robot_state,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const;
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const;
 
   /** \brief Check whether a specified state (\e robot_state) is in collision, with respect to a given
       allowed collision matrix (\e acm). This variant of the function takes
       a non-const \e robot_state and updates its link transforms if needed. */
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                       moveit::core::RobotState& robot_state, const collision_detection::AllowedCollisionMatrix& acm,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkCollision(req, res, static_cast<const moveit::core::RobotState&>(robot_state), acm, publisher);
@@ -519,20 +519,20 @@ public:
   void checkCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                       const moveit::core::RobotState& robot_state,
                       const collision_detection::AllowedCollisionMatrix& acm,
-                      rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const;
+                      rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const;
 
   /** \brief Check whether the current state is in collision,
       but use a collision_detection::CollisionRobot instance that has no padding.
       Since the function is non-const, the current state transforms are also updated if needed. */
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher);
 
   /** \brief Check whether the current state is in collision,
       but use a collision_detection::CollisionRobot instance that has no padding.  */
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     checkCollisionUnpadded(req, res, getCurrentState(), getAllowedCollisionMatrix(), publisher);
   }
@@ -541,7 +541,7 @@ public:
       but use a collision_detection::CollisionRobot instance that has no padding.  */
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res, const moveit::core::RobotState& robot_state,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     checkCollisionUnpadded(req, res, robot_state, getAllowedCollisionMatrix(), publisher);
   }
@@ -551,7 +551,7 @@ public:
       Update the link transforms of \e robot_state if needed. */
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res, moveit::core::RobotState& robot_state,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkCollisionUnpadded(req, res, static_cast<const moveit::core::RobotState&>(robot_state),
@@ -564,7 +564,7 @@ public:
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res, moveit::core::RobotState& robot_state,
                               const collision_detection::AllowedCollisionMatrix& acm,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkCollisionUnpadded(req, res, static_cast<const moveit::core::RobotState&>(robot_state), acm, publisher);
@@ -575,15 +575,15 @@ public:
   void checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                               collision_detection::CollisionResult& res, const moveit::core::RobotState& robot_state,
                               const collision_detection::AllowedCollisionMatrix& acm,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const;
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const;
 
   /** \brief Check whether the current state is in self collision */
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher);
 
   /** \brief Check whether the current state is in self collision */
   void checkSelfCollision(const collision_detection::CollisionRequest& req,
-                          collision_detection::CollisionResult& res, rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          collision_detection::CollisionResult& res, rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     checkSelfCollision(req, res, getCurrentState(), publisher);
   }
@@ -591,7 +591,7 @@ public:
   /** \brief Check whether a specified state (\e robot_state) is in self collision */
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           moveit::core::RobotState& robot_state,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkSelfCollision(req, res, static_cast<const moveit::core::RobotState&>(robot_state), getAllowedCollisionMatrix(), publisher);
@@ -600,7 +600,7 @@ public:
   /** \brief Check whether a specified state (\e robot_state) is in self collision */
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           const moveit::core::RobotState& robot_state,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     // do self-collision checking with the unpadded version of the robot
     getCollisionEnvUnpadded()->checkSelfCollision(req, res, robot_state, getAllowedCollisionMatrix(), publisher);
@@ -611,7 +611,7 @@ public:
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           moveit::core::RobotState& robot_state,
                           const collision_detection::AllowedCollisionMatrix& acm,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     robot_state.updateCollisionBodyTransforms();
     checkSelfCollision(req, res, static_cast<const moveit::core::RobotState&>(robot_state), acm, publisher);
@@ -622,7 +622,7 @@ public:
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           const moveit::core::RobotState& robot_state,
                           const collision_detection::AllowedCollisionMatrix& acm,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     // do self-collision checking with the unpadded version of the robot
     getCollisionEnvUnpadded()->checkSelfCollision(req, res, robot_state, acm, publisher);

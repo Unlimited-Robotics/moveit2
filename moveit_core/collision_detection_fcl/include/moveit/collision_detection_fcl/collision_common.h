@@ -284,7 +284,7 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
  * but with a publisher that register the contacts between objects
 */
 fcl::CollisionCallBack<double>
-getCollisionCallback(rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher);
+getCollisionCallback(rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher);
 
 /** \brief Callback function used by the FCLManager used for each pair of collision objects to
  *   calculate collisions and distances.

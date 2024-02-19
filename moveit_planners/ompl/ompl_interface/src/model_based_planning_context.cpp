@@ -669,7 +669,7 @@ bool ompl_interface::ModelBasedPlanningContext::setGoalConstraints(
     const moveit_msgs::msg::Constraints& path_constraints, moveit_msgs::msg::MoveItErrorCodes* error)
 {
   // ******************* check if the input is correct
-  auto publisher = node_->create_publisher<std_msgs::msg::String>("topic", 10);
+  auto publisher = node_->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
   goal_constraints_.clear();
   for (const moveit_msgs::msg::Constraints& goal_constraint : goal_constraints)
   {

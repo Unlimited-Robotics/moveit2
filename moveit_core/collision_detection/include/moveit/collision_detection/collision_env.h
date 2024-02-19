@@ -43,7 +43,7 @@
 #include <moveit_msgs/msg/link_scale.hpp>
 #include <moveit/collision_detection/world.h>
 
-#include "std_msgs/msg/string.hpp"
+#include "moveit_msgs/msg/move_it_error_codes.hpp"
 namespace collision_detection
 {
 MOVEIT_CLASS_FORWARD(CollisionEnv);  // Defines CollisionEnvPtr, ConstPtr, WeakPtr... etc
@@ -164,7 +164,7 @@ public:
    *  @param res A CollisionResult object that encapsulates the collision result
    *  @param state The kinematic state for which checks are being made         */
   virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -180,7 +180,7 @@ public:
    *  @param acm The allowed collision matrix. */
   virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
                               const AllowedCollisionMatrix& acm,
-                              rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                              rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -190,7 +190,7 @@ public:
   }
 
   virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -200,7 +200,7 @@ public:
 
   virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
                           const AllowedCollisionMatrix& acm,
-                          rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                          rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -210,7 +210,7 @@ public:
   }
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
-                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -220,7 +220,7 @@ public:
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state,
                            const AllowedCollisionMatrix& acm,
-                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -231,7 +231,7 @@ public:
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
                            const moveit::core::RobotState& state2, const AllowedCollisionMatrix& acm,
-                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;
@@ -243,7 +243,7 @@ public:
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const moveit::core::RobotState& state1,
                            const moveit::core::RobotState& state2,
-                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
   {
     (void)req;
     (void)res;

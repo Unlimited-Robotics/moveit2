@@ -423,7 +423,7 @@ void PlanningScene::checkCollisionUnpadded(const collision_detection::CollisionR
 /*-----------------------------------------------*/
 void PlanningScene::checkCollision(const collision_detection::CollisionRequest& req,
                                    collision_detection::CollisionResult& res,
-                                   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+                                   rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
 {
   if (getCurrentState().dirtyCollisionBodyTransforms())
     checkCollision(req, res, getCurrentStateNonConst(), publisher);
@@ -434,14 +434,14 @@ void PlanningScene::checkCollision(const collision_detection::CollisionRequest& 
 void PlanningScene::checkCollision(const collision_detection::CollisionRequest& req,
                                    collision_detection::CollisionResult& res,
                                    const moveit::core::RobotState& robot_state,
-                                   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                   rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   checkCollision(req, res, robot_state, getAllowedCollisionMatrix(), publisher);
 }
 
 void PlanningScene::checkSelfCollision(const collision_detection::CollisionRequest& req,
                                        collision_detection::CollisionResult& res, 
-                                       rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+                                       rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
 {
   if (getCurrentState().dirtyCollisionBodyTransforms())
     checkSelfCollision(req, res, getCurrentStateNonConst(), publisher);
@@ -453,7 +453,7 @@ void PlanningScene::checkCollision(const collision_detection::CollisionRequest& 
                                    collision_detection::CollisionResult& res,
                                    const moveit::core::RobotState& robot_state,
                                    const collision_detection::AllowedCollisionMatrix& acm, 
-                                   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                   rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   // check collision with the world using the padded version
   getCollisionEnv()->checkRobotCollision(req, res, robot_state, acm, publisher);
@@ -465,7 +465,7 @@ void PlanningScene::checkCollision(const collision_detection::CollisionRequest& 
 
 void PlanningScene::checkCollisionUnpadded(const collision_detection::CollisionRequest& req,
                                            collision_detection::CollisionResult& res,
-                                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher)
+                                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher)
 {
   if (getCurrentState().dirtyCollisionBodyTransforms())
     checkCollisionUnpadded(req, res, getCurrentStateNonConst(), getAllowedCollisionMatrix(), publisher);
@@ -477,7 +477,7 @@ void PlanningScene::checkCollisionUnpadded(const collision_detection::CollisionR
                                            collision_detection::CollisionResult& res,
                                            const moveit::core::RobotState& robot_state,
                                            const collision_detection::AllowedCollisionMatrix& acm,
-                                           rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher) const
+                                           rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher) const
 {
   // check collision with the world using the unpadded version
   getCollisionEnvUnpadded()->checkRobotCollision(req, res, robot_state, acm, publisher);
