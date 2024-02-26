@@ -20,6 +20,7 @@ foreach(LIBFCL_LIBRARY ${LIBFCL_LIBRARIES})
 endforeach()
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 
+find_package(nlohmann_json REQUIRED)
 find_package(Bullet 2.87 REQUIRED)
 find_package(angles REQUIRED)
 find_package(OCTOMAP REQUIRED)
@@ -220,7 +221,7 @@ install(
 )
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} orocos_kdl_vendor)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} orocos_kdl_vendor nlohmann_json)
 
 # Plugin exports
 pluginlib_export_plugin_description_file(moveit_core collision_detector_fcl_description.xml)

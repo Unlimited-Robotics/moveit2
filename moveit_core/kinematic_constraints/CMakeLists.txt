@@ -30,6 +30,7 @@ target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_robot_state
   moveit_robot_model
   moveit_utils
+  nlohmann_json::nlohmann_json
 )
 
 install(DIRECTORY include/ DESTINATION include)

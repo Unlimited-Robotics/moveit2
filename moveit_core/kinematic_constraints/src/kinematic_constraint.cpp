@@ -52,6 +52,9 @@
 
 #include <rclcpp/clock.hpp>
 #include <rclcpp/duration.hpp>
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace kinematic_constraints
 {
@@ -313,11 +316,13 @@ ConstraintEvaluationResult JointConstraint::decide(const moveit::core::RobotStat
   {
     moveit_msgs::msg::MoveItErrorCodes msg;
     msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
-    msg.message = "Constraint violated:: Joint name: '" + joint_variable_name_ +
-               "', actual value: " + std::to_string(current_joint_position) +
-               ", desired value: " + std::to_string(joint_position_) +
-               ", tolerance_above: " + std::to_string(joint_tolerance_above_) +
-               ", tolerance_below:" + std::to_string(joint_tolerance_below_);
+    json error_info;
+    error_info["type"] = "Joint";
+    error_info["actual_value"] = current_joint_position;
+    error_info["desired_value"] = joint_position_;
+    error_info["joint_tolerance_above"] = joint_tolerance_above_;
+    error_info["joint_tolerance_below"] = joint_tolerance_below_;
+    msg.message = error_info.dump();
     publisher_->publish(msg);
   }
   return ConstraintEvaluationResult(result, constraint_weight_ * fabs(dif));
@@ -516,11 +521,11 @@ finishPositionConstraintDecision(const Eigen::Vector3d& pt, const Eigen::Vector3
   {
     moveit_msgs::msg::MoveItErrorCodes msg;
     msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
-    msg.message = "Position constraint violated on link '" + name + "', actual value: " + std::to_string(pt.x()) + " ," +
-               std::to_string(pt.y()) + " ," + std::to_string(pt.z()) +
-               ", desired value: " + std::to_string(desired.x()) + " ," + std::to_string(desired.y()) + " ," +
-               std::to_string(desired.z());
-
+    json error_info;
+    error_info["type"] = "Position";
+    error_info["actual_value"] = {pt.x(), pt.y(), pt.z()};
+    error_info["desired_value"] = {desired.x(), desired.y(), desired.z()};
+    msg.message = error_info.dump();
     publisher->publish(msg);
   }
   return ConstraintEvaluationResult(result, weight * sqrt(dx * dx + dy * dy + dz * dz));
@@ -774,13 +779,17 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
 
   if (!result && publisher_)
   {
+    Eigen::Quaterniond q_act(state.getGlobalLinkTransform(link_model_).linear());
+    Eigen::Quaterniond q_des(desired_rotation_matrix_);
     moveit_msgs::msg::MoveItErrorCodes msg;
     msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
-    msg.message = "Orientation constraint violated on link '" + link_model_->getName() +
-               "', Error: " + std::to_string(xyz_rotation(0)) + " ," + std::to_string(xyz_rotation(1)) + " ," +
-               std::to_string(xyz_rotation(2)) + ", desired value: " + std::to_string(absolute_x_axis_tolerance_) +
-               " ," + std::to_string(absolute_y_axis_tolerance_) + " ," + std::to_string(absolute_z_axis_tolerance_);
-
+    json error_info;
+    error_info["type"] = "Orientation";
+    error_info["error"] = {xyz_rotation(0), xyz_rotation(1), xyz_rotation(2)};
+    error_info["desired_value"] = {q_des.x(), q_des.y(), q_des.z(), q_des.w()};
+    error_info["actual_value"] = {q_act.x(), q_act.y(), q_act.z(), q_act.w()};
+    error_info["tolerance"] = {absolute_x_axis_tolerance_, absolute_y_axis_tolerance_, absolute_z_axis_tolerance_};
+    msg.message = error_info.dump();
     publisher_->publish(msg);
   }
 
