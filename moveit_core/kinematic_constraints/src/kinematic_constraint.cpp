@@ -318,6 +318,7 @@ ConstraintEvaluationResult JointConstraint::decide(const moveit::core::RobotStat
     msg.val = msg.SOME_STATE_VIOLATES_CONSTRAINTS;
     json error_info;
     error_info["type"] = "Joint";
+    error_info["joint_name"] = joint_variable_name_.c_str();
     error_info["actual_value"] = current_joint_position;
     error_info["desired_value"] = joint_position_;
     error_info["joint_tolerance_above"] = joint_tolerance_above_;
