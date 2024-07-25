@@ -66,6 +66,10 @@ ompl_interface::StateValidityChecker::StateValidityChecker(const ModelBasedPlann
 
   collision_request_with_distance_verbose_ = collision_request_with_distance_;
   collision_request_with_distance_verbose_.verbose = true;
+  if (planning_context_->getNode())
+  {
+    publisher_ = planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
+  }
 }
 
 void ompl_interface::StateValidityChecker::setVerbose(bool flag)
@@ -112,12 +116,10 @@ bool StateValidityChecker::isValid(const ompl::base::State* state, bool verbose)
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
     planning_context_->getPlanningScene()->checkCollision(
-        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher);
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher_);
   }
   else
   {
@@ -181,13 +183,11 @@ bool StateValidityChecker::isValid(const ompl::base::State* state, double& dist,
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
     planning_context_->getPlanningScene()->checkCollision(verbose ? collision_request_with_distance_verbose_ :
                                                                     collision_request_with_distance_,
-                                                          res, *robot_state, publisher);
+                                                          res, *robot_state, publisher_);
   }
   else
   {
@@ -208,11 +208,9 @@ double StateValidityChecker::cost(const ompl::base::State* state) const
 
   // Calculates cost from a summation of distance to obstacles times the size of the obstacle
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
-    planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state, publisher);
+    planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state, publisher_);
   }
   else
   {
@@ -234,12 +232,10 @@ double StateValidityChecker::clearance(const ompl::base::State* state) const
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
     planning_context_->getPlanningScene()->checkCollision(collision_request_with_distance_, res, *robot_state,
-                                                          publisher);
+                                                          publisher_);
   }
   else
   {
@@ -292,12 +288,10 @@ bool ConstrainedPlanningStateValidityChecker::isValid(const ompl::base::State* w
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
     planning_context_->getPlanningScene()->checkCollision(
-        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher);
+        verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state, publisher_);
   }
   else
   {
@@ -360,13 +354,11 @@ bool ConstrainedPlanningStateValidityChecker::isValid(const ompl::base::State* w
 
   // check collision avoidance
   collision_detection::CollisionResult res;
-  if (planning_context_->getNode())
+  if (publisher_)
   {
-    auto publisher =
-        planning_context_->getNode()->create_publisher<moveit_msgs::msg::MoveItErrorCodes>("moveit/errors", 10);
     planning_context_->getPlanningScene()->checkCollision(verbose ? collision_request_with_distance_verbose_ :
                                                                     collision_request_with_distance_,
-                                                          res, *robot_state, publisher);
+                                                          res, *robot_state, publisher_);
   }
   else
   {

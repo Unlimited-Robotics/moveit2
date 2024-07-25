@@ -106,7 +106,6 @@ ompl_interface::ModelBasedPlanningContext::ModelBasedPlanningContext(const std::
   : ModelBasedPlanningContext(name, spec)
 {
   node_ = node;
-  RCLCPP_INFO(LOGGER, "Using ModelBasedPlanningContext with node !!! :)");
 }
 
 void ompl_interface::ModelBasedPlanningContext::configure(const rclcpp::Node::SharedPtr& node,
@@ -273,7 +272,6 @@ ompl_interface::ModelBasedPlanningContext::allocPathConstrainedSampler(const omp
 
     if (constraint_sampler)
     {
-      RCLCPP_INFO(LOGGER, "%s: Allocatingg!! .l. specialized state sampler for state space", name_.c_str());
       return std::make_shared<ConstrainedSampler>(this, constraint_sampler);
     }
   }
@@ -932,7 +930,6 @@ const moveit_msgs::msg::MoveItErrorCodes ompl_interface::ModelBasedPlanningConte
         }
         auto code = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_);
         ompl::base::PlannerStatus::StatusType statusEnum = code;
-        RCLCPP_ERROR(LOGGER, "code of the ompl solving %d !!", statusEnum);
         bool r = code == ompl::base::PlannerStatus::EXACT_SOLUTION;
         // Was this latest call successful too?
         result.val = (result.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS && r) ?
@@ -959,7 +956,6 @@ const moveit_msgs::msg::MoveItErrorCodes ompl_interface::ModelBasedPlanningConte
         }
         auto code = ompl_parallel_plan_.solve(ptc, 1, count, hybridize_);
         ompl::base::PlannerStatus::StatusType statusEnum = code;
-        RCLCPP_ERROR(LOGGER, "code of the ompl solving %d", statusEnum);
         bool r = code == ompl::base::PlannerStatus::EXACT_SOLUTION;
         // Was this latest call successful too?
         result.val = (result.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS && r) ?

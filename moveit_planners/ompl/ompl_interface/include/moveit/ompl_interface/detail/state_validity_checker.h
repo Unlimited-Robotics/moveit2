@@ -97,7 +97,7 @@ protected:
   collision_detection::CollisionRequest collision_request_with_distance_verbose_;
 
   collision_detection::CollisionRequest collision_request_with_cost_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  rclcpp::Publisher<moveit_msgs::msg::MoveItErrorCodes>::SharedPtr publisher_;
   bool verbose_;
 };
 
